@@ -1,265 +1,75 @@
-package model;
+package util;
 
-import java.time.LocalDate;
+import java.sql.*;
 
-/**
- * Employee class demonstrating inheritance from BaseEntity
- * and polymorphism through method overriding
- */
-public class Employee extends BaseEntity implements Comparable<Employee> {
-    private String firstName;
-    private String lastName;
-    private LocalDate birthday;
-    private String address;
-    private String phoneNumber;
-    private String position;
-    private int positionId;
-    private String status; // Regular, Probationary
-    private double basicSalary;
-    private String immediateSupervisor;
+public class Test {
+    public static void main(String[] args) {
+        System.out.println("Testing connection with password 'admin'...");
 
-    // Government IDs
-    private String sssNumber;
-    private String philhealthNumber;
-    private String tinNumber;
-    private String pagibigNumber;
+        String url = "jdbc:mysql://localhost:3306/mysql"; // Connect to mysql database first
+        String user = "root";
+        String password = "admin";
 
-    // Additional fields for position details (from view)
-    private double riceSubsidy;
-    private double phoneAllowance;
-    private double clothingAllowance;
-    private double grossSemiMonthlyRate;
-    private double hourlyRate;
+        try {
+            // Load driver
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            System.out.println("✅ MySQL driver loaded successfully");
 
-    // Constructors
-    public Employee() {}
+            // Test connection to mysql database (not our app database)
+            Connection conn = DriverManager.getConnection(url + "?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true", user, password);
+            System.out.println("✅ Connected to MySQL server successfully!");
 
-    public Employee(String firstName, String lastName) {
-        this.firstName = firstName;
-        this.lastName = lastName;
-    }
+            // Check if our database exists
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery("SHOW DATABASES LIKE 'aoopdatabase_payroll'");
 
-    public Employee(int employeeId, String firstName, String lastName) {
-        setId(employeeId);
-        this.firstName = firstName;
-        this.lastName = lastName;
-    }
+            if (rs.next()) {
+                System.out.println("✅ Database 'aoopdatabase_payroll' exists");
 
-    // Getters and Setters with validation
-    public String getFirstName() { return firstName; }
-    public void setFirstName(String firstName) {
-        if (firstName == null || firstName.trim().isEmpty()) {
-            throw new IllegalArgumentException("First name cannot be empty");
+                // Now test connection to our specific database
+                conn.close();
+                String appUrl = "jdbc:mysql://localhost:3306/aoopdatabase_payroll?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true";
+                Connection appConn = DriverManager.getConnection(appUrl, user, password);
+                System.out.println("✅ Connected to aoopdatabase_payroll successfully!");
+
+                // Test if credentials table exists
+                Statement appStmt = appConn.createStatement();
+                ResultSet credRs = appStmt.executeQuery("SELECT COUNT(*) FROM credentials");
+                if (credRs.next()) {
+                    System.out.println("✅ Credentials table exists with " + credRs.getInt(1) + " records");
+                }
+
+                appConn.close();
+                System.out.println("\n🎉 Everything looks good! Your login should work now.");
+
+            } else {
+                System.out.println("❌ Database 'aoopdatabase_payroll' does NOT exist");
+                System.out.println("📝 Creating database now...");
+
+                // Create the database
+                stmt.executeUpdate("CREATE DATABASE aoopdatabase_payroll");
+                System.out.println("✅ Database created successfully!");
+                System.out.println("⚠️  You still need to run the SQL script to create tables and insert data");
+            }
+
+            conn.close();
+
+        } catch (ClassNotFoundException e) {
+            System.out.println("❌ MySQL driver not found!");
+            System.out.println("   Make sure mysql-connector-java.jar is in your classpath");
+            System.out.println("   Error: " + e.getMessage());
+        } catch (SQLException e) {
+            System.out.println("❌ SQL Error: " + e.getMessage());
+            System.out.println("   Error Code: " + e.getErrorCode());
+            System.out.println("   SQL State: " + e.getSQLState());
+
+            if (e.getMessage().contains("Access denied")) {
+                System.out.println("\n💡 Possible solutions:");
+                System.out.println("   1. Check if password is really 'admin'");
+                System.out.println("   2. Try empty password: PASSWORD = \"\"");
+                System.out.println("   3. Try password 'root': PASSWORD = \"root\"");
+                System.out.println("   4. Check MySQL Workbench connection settings");
+            }
         }
-        this.firstName = firstName.trim();
-        touch();
-    }
-
-    public String getLastName() { return lastName; }
-    public void setLastName(String lastName) {
-        if (lastName == null || lastName.trim().isEmpty()) {
-            throw new IllegalArgumentException("Last name cannot be empty");
-        }
-        this.lastName = lastName.trim();
-        touch();
-    }
-
-    public LocalDate getBirthday() { return birthday; }
-    public void setBirthday(LocalDate birthday) {
-        if (birthday != null && birthday.isAfter(LocalDate.now())) {
-            throw new IllegalArgumentException("Birthday cannot be in the future");
-        }
-        this.birthday = birthday;
-        touch();
-    }
-
-    public String getAddress() { return address; }
-    public void setAddress(String address) {
-        this.address = address;
-        touch();
-    }
-
-    public String getPhoneNumber() { return phoneNumber; }
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
-        touch();
-    }
-
-    public String getPosition() { return position; }
-    public void setPosition(String position) {
-        this.position = position;
-        touch();
-    }
-
-    public int getPositionId() { return positionId; }
-    public void setPositionId(int positionId) {
-        this.positionId = positionId;
-        touch();
-    }
-
-    public String getStatus() { return status; }
-    public void setStatus(String status) {
-        this.status = status;
-        touch();
-    }
-
-    public double getBasicSalary() { return basicSalary; }
-    public void setBasicSalary(double basicSalary) {
-        if (basicSalary < 0) throw new IllegalArgumentException("Salary cannot be negative");
-        this.basicSalary = basicSalary;
-        touch();
-    }
-
-    public String getImmediateSupervisor() { return immediateSupervisor; }
-    public void setImmediateSupervisor(String immediateSupervisor) {
-        this.immediateSupervisor = immediateSupervisor;
-        touch();
-    }
-
-    // Government ID getters/setters
-    public String getSssNumber() { return sssNumber; }
-    public void setSssNumber(String sssNumber) { this.sssNumber = sssNumber; }
-
-    public String getPhilhealthNumber() { return philhealthNumber; }
-    public void setPhilhealthNumber(String philhealthNumber) { this.philhealthNumber = philhealthNumber; }
-
-    public String getTinNumber() { return tinNumber; }
-    public void setTinNumber(String tinNumber) { this.tinNumber = tinNumber; }
-
-    public String getPagibigNumber() { return pagibigNumber; }
-    public void setPagibigNumber(String pagibigNumber) { this.pagibigNumber = pagibigNumber; }
-
-    // Additional fields from position (populated from view)
-    public double getRiceSubsidy() { return riceSubsidy; }
-    public void setRiceSubsidy(double riceSubsidy) {
-        this.riceSubsidy = riceSubsidy;
-        touch();
-    }
-
-    public double getPhoneAllowance() { return phoneAllowance; }
-    public void setPhoneAllowance(double phoneAllowance) {
-        this.phoneAllowance = phoneAllowance;
-        touch();
-    }
-
-    public double getClothingAllowance() { return clothingAllowance; }
-    public void setClothingAllowance(double clothingAllowance) {
-        this.clothingAllowance = clothingAllowance;
-        touch();
-    }
-
-    public double getGrossSemiMonthlyRate() { return grossSemiMonthlyRate; }
-    public void setGrossSemiMonthlyRate(double grossSemiMonthlyRate) {
-        this.grossSemiMonthlyRate = grossSemiMonthlyRate;
-        touch();
-    }
-
-    public double getHourlyRate() { return hourlyRate; }
-    public void setHourlyRate(double hourlyRate) {
-        this.hourlyRate = hourlyRate;
-        touch();
-    }
-
-    // Utility methods
-    public String getFullName() {
-        if (firstName == null && lastName == null) return "Unknown";
-        if (firstName == null) return lastName;
-        if (lastName == null) return firstName;
-        return firstName + " " + lastName;
-    }
-
-    public String getFormattedName() {
-        if (firstName == null && lastName == null) return "Unknown";
-        if (firstName == null) return lastName;
-        if (lastName == null) return firstName;
-        return lastName + ", " + firstName;
-    }
-
-    public int getAge() {
-        return birthday != null ? LocalDate.now().getYear() - birthday.getYear() : 0;
-    }
-
-    public double getDailyRate() {
-        return basicSalary / 22.0; // 22 working days
-    }
-
-    public double getCalculatedHourlyRate() {
-        return getDailyRate() / 8.0; // 8 hours per day
-    }
-
-    public double getTotalAllowances() {
-        return riceSubsidy + phoneAllowance + clothingAllowance;
-    }
-
-    public boolean isRegular() {
-        return "Regular".equalsIgnoreCase(status);
-    }
-
-    public boolean isProbationary() {
-        return "Probationary".equalsIgnoreCase(status);
-    }
-
-    public boolean hasCompleteGovernmentIds() {
-        return sssNumber != null && !sssNumber.trim().isEmpty() &&
-                philhealthNumber != null && !philhealthNumber.trim().isEmpty() &&
-                tinNumber != null && !tinNumber.trim().isEmpty() &&
-                pagibigNumber != null && !pagibigNumber.trim().isEmpty();
-    }
-
-    public boolean hasContactInfo() {
-        return (phoneNumber != null && !phoneNumber.trim().isEmpty()) ||
-                (address != null && !address.trim().isEmpty());
-    }
-
-    /**
-     * Polymorphism - overriding BaseEntity method with specific implementation
-     */
-    @Override
-    public boolean isValid() {
-        return firstName != null && !firstName.trim().isEmpty() &&
-                lastName != null && !lastName.trim().isEmpty() &&
-                basicSalary >= 0;
-    }
-
-    /**
-     * Polymorphism - overriding BaseEntity method with specific implementation
-     */
-    @Override
-    public String getDisplayName() {
-        return getId() + " - " + getFullName();
-    }
-
-    /**
-     * Implementing Comparable interface for sorting employees
-     * Demonstrates interface implementation
-     */
-    @Override
-    public int compareTo(Employee other) {
-        if (other == null) return 1;
-        
-        // Primary sort by last name
-        int lastNameComparison = this.lastName != null ? 
-            this.lastName.compareToIgnoreCase(other.lastName != null ? other.lastName : "") : 
-            (other.lastName != null ? -1 : 0);
-            
-        if (lastNameComparison != 0) {
-            return lastNameComparison;
-        }
-        
-        // Secondary sort by first name
-        return this.firstName != null ? 
-            this.firstName.compareToIgnoreCase(other.firstName != null ? other.firstName : "") : 
-            (other.firstName != null ? -1 : 0);
-    }
-
-    @Override
-    public String toString() {
-        return "Employee{" +
-                "id=" + getId() +
-                ", name='" + getFullName() + '\'' +
-                ", position='" + position + '\'' +
-                ", status='" + status + '\'' +
-                ", basicSalary=" + basicSalary +
-                '}';
     }
 }

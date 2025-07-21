@@ -1,7 +1,6 @@
 package model;
 
 import java.time.LocalDate;
-import java.util.Objects;
 
 /**
  * Employee class demonstrating inheritance from BaseEntity
@@ -222,13 +221,12 @@ public class Employee extends BaseEntity implements Comparable<Employee> {
                 basicSalary >= 0;
     }
 
+    /**
+     * Polymorphism - overriding BaseEntity method with specific implementation
+     */
+    @Override
     public String getDisplayName() {
         return getId() + " - " + getFullName();
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(super.hashCode(), firstName, lastName);
     }
 
     /**
