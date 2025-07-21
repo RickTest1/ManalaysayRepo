@@ -2,7 +2,11 @@ package model;
 
 import java.time.LocalDate;
 
-public class Employee extends BaseEntity {
+/**
+ * Employee class demonstrating inheritance from BaseEntity
+ * and polymorphism through method overriding
+ */
+public class Employee extends BaseEntity implements Comparable<Employee> {
     private String firstName;
     private String lastName;
     private LocalDate birthday;
@@ -207,6 +211,9 @@ public class Employee extends BaseEntity {
                 (address != null && !address.trim().isEmpty());
     }
 
+    /**
+     * Polymorphism - overriding BaseEntity method with specific implementation
+     */
     @Override
     public boolean isValid() {
         return firstName != null && !firstName.trim().isEmpty() &&
@@ -214,9 +221,35 @@ public class Employee extends BaseEntity {
                 basicSalary >= 0;
     }
 
+    /**
+     * Polymorphism - overriding BaseEntity method with specific implementation
+     */
     @Override
     public String getDisplayName() {
         return getId() + " - " + getFullName();
+    }
+
+    /**
+     * Implementing Comparable interface for sorting employees
+     * Demonstrates interface implementation
+     */
+    @Override
+    public int compareTo(Employee other) {
+        if (other == null) return 1;
+        
+        // Primary sort by last name
+        int lastNameComparison = this.lastName != null ? 
+            this.lastName.compareToIgnoreCase(other.lastName != null ? other.lastName : "") : 
+            (other.lastName != null ? -1 : 0);
+            
+        if (lastNameComparison != 0) {
+            return lastNameComparison;
+        }
+        
+        // Secondary sort by first name
+        return this.firstName != null ? 
+            this.firstName.compareToIgnoreCase(other.firstName != null ? other.firstName : "") : 
+            (other.firstName != null ? -1 : 0);
     }
 
     @Override

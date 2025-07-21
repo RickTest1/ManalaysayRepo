@@ -2,7 +2,7 @@ package model;
 
 import java.time.LocalDate;
 
-public abstract class PayrollComponent extends BaseEntity {
+public abstract class PayrollComponent extends BaseEntity implements Calculable {
     protected int employeeId;
     protected String type;
     protected double amount;
@@ -50,8 +50,11 @@ public abstract class PayrollComponent extends BaseEntity {
     public LocalDate getEffectiveDate() { return effectiveDate; }
     public void setEffectiveDate(LocalDate effectiveDate) { this.effectiveDate = effectiveDate; touch(); }
 
-    // Abstract methods for polymorphism
+    // Implemented from Calculable interface
+    @Override
     public abstract void calculate();
+    
+    // Abstract methods for polymorphism
     public abstract String getCategory(); // "Allowance", "Deduction", "Contribution"
     public abstract boolean isPositiveAmount(); // true for earnings, false for deductions
 

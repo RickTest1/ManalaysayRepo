@@ -1,0 +1,493 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE jasperReport PUBLIC "-//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+
+<jasperReport name="motorph_payslip" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+    
+    <!-- Parameters -->
+    <parameter name="COMPANY_LOGO" class="java.io.InputStream"/>
+    <parameter name="REPORT_TITLE" class="java.lang.String"/>
+    <parameter name="GENERATED_BY" class="java.lang.String"/>
+    <parameter name="EMPLOYEE_NAME" class="java.lang.String"/>
+    <parameter name="EMPLOYEE_ID" class="java.lang.Integer"/>
+    <parameter name="GENERATION_DATE" class="java.util.Date"/>
+    
+    <!-- Fields from PayslipData -->
+    <field name="employeeId" class="java.lang.Integer"/>
+    <field name="employeeName" class="java.lang.String"/>
+    <field name="position" class="java.lang.String"/>
+    <field name="department" class="java.lang.String"/>
+    <field name="payslipNo" class="java.lang.String"/>
+    <field name="periodStart" class="java.sql.Date"/>
+    <field name="periodEnd" class="java.sql.Date"/>
+    <field name="monthlyRate" class="java.math.BigDecimal"/>
+    <field name="dailyRate" class="java.math.BigDecimal"/>
+    <field name="daysWorked" class="java.lang.Integer"/>
+    <field name="riceSubsidy" class="java.math.BigDecimal"/>
+    <field name="phoneAllowance" class="java.math.BigDecimal"/>
+    <field name="clothingAllowance" class="java.math.BigDecimal"/>
+    <field name="totalBenefits" class="java.math.BigDecimal"/>
+    <field name="sss" class="java.math.BigDecimal"/>
+    <field name="philhealth" class="java.math.BigDecimal"/>
+    <field name="pagibig" class="java.math.BigDecimal"/>
+    <field name="tax" class="java.math.BigDecimal"/>
+    <field name="totalDeductions" class="java.math.BigDecimal"/>
+    <field name="grossPay" class="java.math.BigDecimal"/>
+    <field name="netPay" class="java.math.BigDecimal"/>
+    
+    <!-- Title Band -->
+    <title>
+        <band height="120">
+            <!-- Company Header -->
+            <rectangle>
+                <reportElement x="0" y="0" width="555" height="80" backcolor="#2E3B4F"/>
+                <graphicElement>
+                    <pen lineWidth="0"/>
+                </graphicElement>
+            </rectangle>
+            
+            <!-- Company Logo (if available) -->
+            <image scaleImage="FillFrame" hAlign="Left" vAlign="Middle">
+                <reportElement x="10" y="10" width="60" height="60"/>
+                <imageExpression class="java.io.InputStream">$P{COMPANY_LOGO}</imageExpression>
+            </image>
+            
+            <!-- Company Name -->
+            <staticText>
+                <reportElement x="80" y="10" width="300" height="30" forecolor="#FFFFFF"/>
+                <textElement>
+                    <font fontName="Arial" size="20" isBold="true"/>
+                </textElement>
+                <text><![CDATA[MotorPH]]></text>
+            </staticText>
+            
+            <!-- Payslip Title -->
+            <staticText>
+                <reportElement x="80" y="40" width="300" height="20" forecolor="#FFFFFF"/>
+                <textElement>
+                    <font fontName="Arial" size="14"/>
+                </textElement>
+                <text><![CDATA[Employee Payslip]]></text>
+            </staticText>
+            
+            <!-- Payslip Number -->
+            <staticText>
+                <reportElement x="400" y="10" width="80" height="15" forecolor="#FFFFFF"/>
+                <textElement>
+                    <font fontName="Arial" size="10" isBold="true"/>
+                </textElement>
+                <text><![CDATA[Payslip No:]]></text>
+            </staticText>
+            
+            <textField>
+                <reportElement x="400" y="25" width="145" height="15" forecolor="#FFFFFF"/>
+                <textElement>
+                    <font fontName="Arial" size="10"/>
+                </textElement>
+                <textFieldExpression class="java.lang.String">$F{payslipNo}</textFieldExpression>
+            </textField>
+            
+            <!-- Generation Date -->
+            <staticText>
+                <reportElement x="400" y="45" width="80" height="15" forecolor="#FFFFFF"/>
+                <textElement>
+                    <font fontName="Arial" size="10" isBold="true"/>
+                </textElement>
+                <text><![CDATA[Generated:]]></text>
+            </staticText>
+            
+            <textField pattern="MMM dd, yyyy">
+                <reportElement x="400" y="60" width="145" height="15" forecolor="#FFFFFF"/>
+                <textElement>
+                    <font fontName="Arial" size="10"/>
+                </textElement>
+                <textFieldExpression class="java.util.Date">$P{GENERATION_DATE}</textFieldExpression>
+            </textField>
+            
+            <!-- Employee Information Section -->
+            <staticText>
+                <reportElement x="0" y="90" width="555" height="20" backcolor="#F5F5F5"/>
+                <textElement textAlignment="Center">
+                    <font fontName="Arial" size="12" isBold="true"/>
+                </textElement>
+                <text><![CDATA[EMPLOYEE INFORMATION]]></text>
+            </staticText>
+        </band>
+    </title>
+    
+    <!-- Page Header -->
+    <pageHeader>
+        <band height="80">
+            <!-- Employee Details -->
+            <staticText>
+                <reportElement x="0" y="10" width="80" height="15"/>
+                <textElement>
+                    <font fontName="Arial" size="10" isBold="true"/>
+                </textElement>
+                <text><![CDATA[Employee ID:]]></text>
+            </staticText>
+            
+            <textField>
+                <reportElement x="80" y="10" width="100" height="15"/>
+                <textElement>
+                    <font fontName="Arial" size="10"/>
+                </textElement>
+                <textFieldExpression class="java.lang.Integer">$F{employeeId}</textFieldExpression>
+            </textField>
+            
+            <staticText>
+                <reportElement x="200" y="10" width="80" height="15"/>
+                <textElement>
+                    <font fontName="Arial" size="10" isBold="true"/>
+                </textElement>
+                <text><![CDATA[Employee Name:]]></text>
+            </staticText>
+            
+            <textField>
+                <reportElement x="280" y="10" width="275" height="15"/>
+                <textElement>
+                    <font fontName="Arial" size="10"/>
+                </textElement>
+                <textFieldExpression class="java.lang.String">$F{employeeName}</textFieldExpression>
+            </textField>
+            
+            <staticText>
+                <reportElement x="0" y="30" width="80" height="15"/>
+                <textElement>
+                    <font fontName="Arial" size="10" isBold="true"/>
+                </textElement>
+                <text><![CDATA[Position:]]></text>
+            </staticText>
+            
+            <textField>
+                <reportElement x="80" y="30" width="200" height="15"/>
+                <textElement>
+                    <font fontName="Arial" size="10"/>
+                </textElement>
+                <textFieldExpression class="java.lang.String">$F{position}</textFieldExpression>
+            </textField>
+            
+            <staticText>
+                <reportElement x="300" y="30" width="80" height="15"/>
+                <textElement>
+                    <font fontName="Arial" size="10" isBold="true"/>
+                </textElement>
+                <text><![CDATA[Department:]]></text>
+            </staticText>
+            
+            <textField>
+                <reportElement x="380" y="30" width="175" height="15"/>
+                <textElement>
+                    <font fontName="Arial" size="10"/>
+                </textElement>
+                <textFieldExpression class="java.lang.String">$F{department}</textFieldExpression>
+            </textField>
+            
+            <!-- Pay Period -->
+            <staticText>
+                <reportElement x="0" y="50" width="80" height="15"/>
+                <textElement>
+                    <font fontName="Arial" size="10" isBold="true"/>
+                </textElement>
+                <text><![CDATA[Pay Period:]]></text>
+            </staticText>
+            
+            <textField pattern="MMM dd, yyyy">
+                <reportElement x="80" y="50" width="80" height="15"/>
+                <textElement>
+                    <font fontName="Arial" size="10"/>
+                </textElement>
+                <textFieldExpression class="java.sql.Date">$F{periodStart}</textFieldExpression>
+            </textField>
+            
+            <staticText>
+                <reportElement x="160" y="50" width="20" height="15"/>
+                <textElement textAlignment="Center">
+                    <font fontName="Arial" size="10"/>
+                </textElement>
+                <text><![CDATA[to]]></text>
+            </staticText>
+            
+            <textField pattern="MMM dd, yyyy">
+                <reportElement x="180" y="50" width="80" height="15"/>
+                <textElement>
+                    <font fontName="Arial" size="10"/>
+                </textElement>
+                <textFieldExpression class="java.sql.Date">$F{periodEnd}</textFieldExpression>
+            </textField>
+        </band>
+    </pageHeader>
+    
+    <!-- Detail Band -->
+    <detail>
+        <band height="400">
+            <!-- Earnings Section -->
+            <rectangle>
+                <reportElement x="0" y="10" width="270" height="180" backcolor="#F8F9FA"/>
+                <graphicElement>
+                    <pen lineWidth="1" lineColor="#DEE2E6"/>
+                </graphicElement>
+            </rectangle>
+            
+            <staticText>
+                <reportElement x="10" y="20" width="250" height="20" backcolor="#E9ECEF"/>
+                <textElement textAlignment="Center">
+                    <font fontName="Arial" size="12" isBold="true"/>
+                </textElement>
+                <text><![CDATA[EARNINGS]]></text>
+            </staticText>
+            
+            <!-- Basic Pay -->
+            <staticText>
+                <reportElement x="20" y="50" width="120" height="15"/>
+                <textElement>
+                    <font fontName="Arial" size="10"/>
+                </textElement>
+                <text><![CDATA[Monthly Rate:]]></text>
+            </staticText>
+            
+            <textField pattern="₱#,##0.00">
+                <reportElement x="150" y="50" width="100" height="15"/>
+                <textElement textAlignment="Right">
+                    <font fontName="Arial" size="10"/>
+                </textElement>
+                <textFieldExpression class="java.math.BigDecimal">$F{monthlyRate}</textFieldExpression>
+            </textField>
+            
+            <staticText>
+                <reportElement x="20" y="70" width="120" height="15"/>
+                <textElement>
+                    <font fontName="Arial" size="10"/>
+                </textElement>
+                <text><![CDATA[Days Worked:]]></text>
+            </staticText>
+            
+            <textField>
+                <reportElement x="150" y="70" width="100" height="15"/>
+                <textElement textAlignment="Right">
+                    <font fontName="Arial" size="10"/>
+                </textElement>
+                <textFieldExpression class="java.lang.Integer">$F{daysWorked}</textFieldExpression>
+            </textField>
+            
+            <!-- Allowances -->
+            <staticText>
+                <reportElement x="20" y="90" width="120" height="15"/>
+                <textElement>
+                    <font fontName="Arial" size="10"/>
+                </textElement>
+                <text><![CDATA[Rice Subsidy:]]></text>
+            </staticText>
+            
+            <textField pattern="₱#,##0.00">
+                <reportElement x="150" y="90" width="100" height="15"/>
+                <textElement textAlignment="Right">
+                    <font fontName="Arial" size="10"/>
+                </textElement>
+                <textFieldExpression class="java.math.BigDecimal">$F{riceSubsidy}</textFieldExpression>
+            </textField>
+            
+            <staticText>
+                <reportElement x="20" y="110" width="120" height="15"/>
+                <textElement>
+                    <font fontName="Arial" size="10"/>
+                </textElement>
+                <text><![CDATA[Phone Allowance:]]></text>
+            </staticText>
+            
+            <textField pattern="₱#,##0.00">
+                <reportElement x="150" y="110" width="100" height="15"/>
+                <textElement textAlignment="Right">
+                    <font fontName="Arial" size="10"/>
+                </textElement>
+                <textFieldExpression class="java.math.BigDecimal">$F{phoneAllowance}</textFieldExpression>
+            </textField>
+            
+            <staticText>
+                <reportElement x="20" y="130" width="120" height="15"/>
+                <textElement>
+                    <font fontName="Arial" size="10"/>
+                </textElement>
+                <text><![CDATA[Clothing Allowance:]]></text>
+            </staticText>
+            
+            <textField pattern="₱#,##0.00">
+                <reportElement x="150" y="130" width="100" height="15"/>
+                <textElement textAlignment="Right">
+                    <font fontName="Arial" size="10"/>
+                </textElement>
+                <textFieldExpression class="java.math.BigDecimal">$F{clothingAllowance}</textFieldExpression>
+            </textField>
+            
+            <!-- Gross Pay -->
+            <line>
+                <reportElement x="20" y="155" width="230" height="1"/>
+                <graphicElement>
+                    <pen lineWidth="1"/>
+                </graphicElement>
+            </line>
+            
+            <staticText>
+                <reportElement x="20" y="165" width="120" height="15"/>
+                <textElement>
+                    <font fontName="Arial" size="11" isBold="true"/>
+                </textElement>
+                <text><![CDATA[GROSS PAY:]]></text>
+            </staticText>
+            
+            <textField pattern="₱#,##0.00">
+                <reportElement x="150" y="165" width="100" height="15"/>
+                <textElement textAlignment="Right">
+                    <font fontName="Arial" size="11" isBold="true"/>
+                </textElement>
+                <textFieldExpression class="java.math.BigDecimal">$F{grossPay}</textFieldExpression>
+            </textField>
+            
+            <!-- Deductions Section -->
+            <rectangle>
+                <reportElement x="285" y="10" width="270" height="180" backcolor="#FFF5F5"/>
+                <graphicElement>
+                    <pen lineWidth="1" lineColor="#DEE2E6"/>
+                </graphicElement>
+            </rectangle>
+            
+            <staticText>
+                <reportElement x="295" y="20" width="250" height="20" backcolor="#FFEBEE"/>
+                <textElement textAlignment="Center">
+                    <font fontName="Arial" size="12" isBold="true"/>
+                </textElement>
+                <text><![CDATA[DEDUCTIONS]]></text>
+            </staticText>
+            
+            <!-- Government Contributions -->
+            <staticText>
+                <reportElement x="305" y="50" width="120" height="15"/>
+                <textElement>
+                    <font fontName="Arial" size="10"/>
+                </textElement>
+                <text><![CDATA[SSS Contribution:]]></text>
+            </staticText>
+            
+            <textField pattern="₱#,##0.00">
+                <reportElement x="435" y="50" width="100" height="15"/>
+                <textElement textAlignment="Right">
+                    <font fontName="Arial" size="10"/>
+                </textElement>
+                <textFieldExpression class="java.math.BigDecimal">$F{sss}</textFieldExpression>
+            </textField>
+            
+            <staticText>
+                <reportElement x="305" y="70" width="120" height="15"/>
+                <textElement>
+                    <font fontName="Arial" size="10"/>
+                </textElement>
+                <text><![CDATA[PhilHealth:]]></text>
+            </staticText>
+            
+            <textField pattern="₱#,##0.00">
+                <reportElement x="435" y="70" width="100" height="15"/>
+                <textElement textAlignment="Right">
+                    <font fontName="Arial" size="10"/>
+                </textElement>
+                <textFieldExpression class="java.math.BigDecimal">$F{philhealth}</textFieldExpression>
+            </textField>
+            
+            <staticText>
+                <reportElement x="305" y="90" width="120" height="15"/>
+                <textElement>
+                    <font fontName="Arial" size="10"/>
+                </textElement>
+                <text><![CDATA[Pag-IBIG:]]></text>
+            </staticText>
+            
+            <textField pattern="₱#,##0.00">
+                <reportElement x="435" y="90" width="100" height="15"/>
+                <textElement textAlignment="Right">
+                    <font fontName="Arial" size="10"/>
+                </textElement>
+                <textFieldExpression class="java.math.BigDecimal">$F{pagibig}</textFieldExpression>
+            </textField>
+            
+            <staticText>
+                <reportElement x="305" y="110" width="120" height="15"/>
+                <textElement>
+                    <font fontName="Arial" size="10"/>
+                </textElement>
+                <text><![CDATA[Withholding Tax:]]></text>
+            </staticText>
+            
+            <textField pattern="₱#,##0.00">
+                <reportElement x="435" y="110" width="100" height="15"/>
+                <textElement textAlignment="Right">
+                    <font fontName="Arial" size="10"/>
+                </textElement>
+                <textFieldExpression class="java.math.BigDecimal">$F{tax}</textFieldExpression>
+            </textField>
+            
+            <!-- Total Deductions -->
+            <line>
+                <reportElement x="305" y="135" width="230" height="1"/>
+                <graphicElement>
+                    <pen lineWidth="1"/>
+                </graphicElement>
+            </line>
+            
+            <staticText>
+                <reportElement x="305" y="145" width="120" height="15"/>
+                <textElement>
+                    <font fontName="Arial" size="11" isBold="true"/>
+                </textElement>
+                <text><![CDATA[TOTAL DEDUCTIONS:]]></text>
+            </staticText>
+            
+            <textField pattern="₱#,##0.00">
+                <reportElement x="435" y="145" width="100" height="15"/>
+                <textElement textAlignment="Right">
+                    <font fontName="Arial" size="11" isBold="true"/>
+                </textElement>
+                <textFieldExpression class="java.math.BigDecimal">$F{totalDeductions}</textFieldExpression>
+            </textField>
+            
+            <!-- Net Pay Section -->
+            <rectangle>
+                <reportElement x="0" y="210" width="555" height="60" backcolor="#E8F5E8"/>
+                <graphicElement>
+                    <pen lineWidth="2" lineColor="#4CAF50"/>
+                </graphicElement>
+            </rectangle>
+            
+            <staticText>
+                <reportElement x="20" y="230" width="200" height="20"/>
+                <textElement>
+                    <font fontName="Arial" size="16" isBold="true"/>
+                </textElement>
+                <text><![CDATA[NET PAY:]]></text>
+            </staticText>
+            
+            <textField pattern="₱#,##0.00">
+                <reportElement x="350" y="230" width="185" height="20"/>
+                <textElement textAlignment="Right">
+                    <font fontName="Arial" size="16" isBold="true"/>
+                </textElement>
+                <textFieldExpression class="java.math.BigDecimal">$F{netPay}</textFieldExpression>
+            </textField>
+            
+            <!-- Footer Information -->
+            <staticText>
+                <reportElement x="0" y="290" width="555" height="15"/>
+                <textElement textAlignment="Center">
+                    <font fontName="Arial" size="8" isItalic="true"/>
+                </textElement>
+                <text><![CDATA[This payslip is computer-generated and does not require a signature.]]></text>
+            </staticText>
+            
+            <staticText>
+                <reportElement x="0" y="310" width="555" height="15"/>
+                <textElement textAlignment="Center">
+                    <font fontName="Arial" size="8"/>
+                </textElement>
+                <text><![CDATA[Generated by MotorPH Payroll System]]></text>
+            </staticText>
+        </band>
+    </detail>
+    
+</jasperReport>

@@ -3,11 +3,6 @@ package service;
 import dao.EmployeeDAO;
 import model.Employee;
 import service.PayrollCalculator.PayrollData;
-import net.sf.jasperreports.engine.*;
-import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
-import net.sf.jasperreports.engine.export.JRPdfExporter;
-import net.sf.jasperreports.engine.export.ooxml.JRXlsxExporter;
-import net.sf.jasperreports.export.*;
 
 import java.io.*;
 import java.math.BigDecimal;
@@ -24,7 +19,7 @@ public class JasperPayslipService {
 
     private final EmployeeDAO employeeDAO = new EmployeeDAO();
     private final PayrollCalculator payrollCalculator = new PayrollCalculator();
-    private static JasperReport cachedCompiledReport;
+    private static Object cachedCompiledReport;
     private final boolean testMode; // added
 
     public enum ExportFormat {
@@ -54,12 +49,17 @@ public class JasperPayslipService {
                                         java.time.LocalDate end, ExportFormat format)
             throws JasperReportException {
         try {
+            // Check if JasperReports is available
+            if (!isJasperReportsAvailable()) {
+                throw new JasperReportException("JasperReports library not available");
+            }
+            
             Employee emp = employeeDAO.getEmployeeWithPositionDetails(employeeId);
             if (emp == null) throw new JasperReportException("Employee not found: " + employeeId);
             PayrollData pd = payrollCalculator.calculatePayroll(employeeId, start, end);
-            JRBeanCollectionDataSource ds = new JRBeanCollectionDataSource(
-                    Collections.singletonList(createPayslipData(emp, pd)));
-            JasperPrint print = JasperFillManager.fillReport(getCompiledReport(), createReportParameters(emp), ds);
+            
+            Object ds = createDataSource(Collections.singletonList(createPayslipData(emp, pd)));
+            Object print = fillReport(getCompiledReport(), createReportParameters(emp), ds);
             return exportReport(print, format);
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Payslip generation failed", e);
@@ -87,26 +87,49 @@ public class JasperPayslipService {
         return file;
     }
 
+    private boolean isJasperReportsAvailable() {
+        try {
+            Class.forName("net.sf.jasperreports.engine.JasperReport");
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
+    }
+    
+    private Object createDataSource(List<PayslipData> data) throws Exception {
+        Class<?> dsClass = Class.forName("net.sf.jasperreports.engine.data.JRBeanCollectionDataSource");
+        return dsClass.getConstructor(java.util.Collection.class).newInstance(data);
+    }
+    
+    private Object fillReport(Object compiledReport, Map<String, Object> params, Object dataSource) throws Exception {
+        Class<?> fillManagerClass = Class.forName("net.sf.jasperreports.engine.JasperFillManager");
+        return fillManagerClass.getMethod("fillReport", Object.class, Map.class, Object.class)
+                .invoke(null, compiledReport, params, dataSource);
+    }
+
     private void validateEnvironment() throws JasperReportException {
-        try { Class.forName("net.sf.jasperreports.engine.JasperReport"); }
-        catch (ClassNotFoundException e) { throw new JasperReportException("JasperReports missing in classpath."); }
+        if (!isJasperReportsAvailable()) {
+            throw new JasperReportException("JasperReports missing in classpath.");
+        }
         if (getClass().getResourceAsStream(PAYSLIP_TEMPLATE) == null)
             throw new JasperReportException("Template not found: " + PAYSLIP_TEMPLATE);
     }
 
-    private JasperReport getCompiledReport() throws JRException, IOException {
+    private Object getCompiledReport() throws Exception {
         if (testMode) {
             // Return a simple dummy compiled report in test mode
             String dummy = "<?xml version=\"1.0\"?><jasperReport name=\"dummy\"></jasperReport>";
             try (InputStream in = new ByteArrayInputStream(dummy.getBytes())) {
-                return JasperCompileManager.compileReport(in);
+                Class<?> compileManagerClass = Class.forName("net.sf.jasperreports.engine.JasperCompileManager");
+                return compileManagerClass.getMethod("compileReport", InputStream.class).invoke(null, in);
             }
         }
 
         if (cachedCompiledReport != null) return cachedCompiledReport;
         try (InputStream in = getClass().getResourceAsStream(PAYSLIP_TEMPLATE)) {
-            if (in == null) throw new JRException("Missing template: " + PAYSLIP_TEMPLATE);
-            cachedCompiledReport = JasperCompileManager.compileReport(in);
+            if (in == null) throw new Exception("Missing template: " + PAYSLIP_TEMPLATE);
+            Class<?> compileManagerClass = Class.forName("net.sf.jasperreports.engine.JasperCompileManager");
+            cachedCompiledReport = compileManagerClass.getMethod("compileReport", InputStream.class).invoke(null, in);
         }
         return cachedCompiledReport;
     }
@@ -166,26 +189,37 @@ public class JasperPayslipService {
         return params;
     }
 
-    private byte[] exportReport(JasperPrint print, ExportFormat format) throws JRException {
+    private byte[] exportReport(Object print, ExportFormat format) throws Exception {
         try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             if (format == ExportFormat.PDF) {
-                JRPdfExporter pdf = new JRPdfExporter();
-                pdf.setExporterInput(new SimpleExporterInput(print));
-                pdf.setExporterOutput(new SimpleOutputStreamExporterOutput(out));
-                pdf.setConfiguration(new SimplePdfExporterConfiguration());
-                pdf.exportReport();
+                Class<?> pdfExporterClass = Class.forName("net.sf.jasperreports.engine.export.JRPdfExporter");
+                Object pdf = pdfExporterClass.getDeclaredConstructor().newInstance();
+                
+                Class<?> simpleInputClass = Class.forName("net.sf.jasperreports.export.SimpleExporterInput");
+                Object input = simpleInputClass.getConstructor(Object.class).newInstance(print);
+                
+                Class<?> simpleOutputClass = Class.forName("net.sf.jasperreports.export.SimpleOutputStreamExporterOutput");
+                Object output = simpleOutputClass.getConstructor(OutputStream.class).newInstance(out);
+                
+                pdfExporterClass.getMethod("setExporterInput", Object.class).invoke(pdf, input);
+                pdfExporterClass.getMethod("setExporterOutput", Object.class).invoke(pdf, output);
+                pdfExporterClass.getMethod("exportReport").invoke(pdf);
             } else {
-                JRXlsxExporter xlsx = new JRXlsxExporter();
-                xlsx.setExporterInput(new SimpleExporterInput(print));
-                xlsx.setExporterOutput(new SimpleOutputStreamExporterOutput(out));
-                SimpleXlsxReportConfiguration cfg = new SimpleXlsxReportConfiguration();
-                cfg.setOnePagePerSheet(true);
-                cfg.setDetectCellType(true);
-                xlsx.setConfiguration(cfg);
-                xlsx.exportReport();
+                Class<?> xlsxExporterClass = Class.forName("net.sf.jasperreports.engine.export.ooxml.JRXlsxExporter");
+                Object xlsx = xlsxExporterClass.getDeclaredConstructor().newInstance();
+                
+                Class<?> simpleInputClass = Class.forName("net.sf.jasperreports.export.SimpleExporterInput");
+                Object input = simpleInputClass.getConstructor(Object.class).newInstance(print);
+                
+                Class<?> simpleOutputClass = Class.forName("net.sf.jasperreports.export.SimpleOutputStreamExporterOutput");
+                Object output = simpleOutputClass.getConstructor(OutputStream.class).newInstance(out);
+                
+                xlsxExporterClass.getMethod("setExporterInput", Object.class).invoke(xlsx, input);
+                xlsxExporterClass.getMethod("setExporterOutput", Object.class).invoke(xlsx, output);
+                xlsxExporterClass.getMethod("exportReport").invoke(xlsx);
             }
             return out.toByteArray();
-        } catch (IOException e) { throw new JRException("Export failed: " + e.getMessage(), e); }
+        } catch (IOException e) { throw new Exception("Export failed: " + e.getMessage(), e); }
     }
 
     public static class PayslipData {
